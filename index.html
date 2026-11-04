@@ -11,17 +11,18 @@
 /* Layout: single-screen arcade cabinet — HUD strip above a wide canvas (one lane, or two stacked lanes in duel), hint line below. One deliberate look, so no dark/light split. */
 :root{
   --ink:#21142f; --paper:#fff4e2; --accent:#ffcf3d; --fire:#ff6b3d;
+  --card:#2a1b3d; --ok:#8be08f;
   --p1:#4fae5a; --p2:#4a8fd6; --panel:#3b2a52; --note:#fffdf3; --pen:#1f3a8a; --late:#ff5a4a;
   --display:'Bungee', 'Impact', 'Arial Black', sans-serif;
   --body:'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --hand:'Caveat', 'Comic Sans MS', 'Segoe Print', cursive;
   color-scheme:dark;
 }
-html,body{height:100%}
+html,body{min-height:100%}
 [hidden]{display:none!important}
 body{ margin:0;
   background:var(--ink); color:var(--paper); font-family:var(--body);
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+  display:flex; flex-direction:column; align-items:center; justify-content:safe center; gap:14px;
   padding-block:16px;
   padding-left:max(16px, env(safe-area-inset-left, 0px));
   padding-right:max(16px, env(safe-area-inset-right, 0px));
@@ -71,6 +72,38 @@ button:focus-visible{outline:3px solid var(--paper); outline-offset:3px}
 .hint{font-size:14px; opacity:.75; text-align:center; margin:0; line-height:1.9}
 kbd{font-family:var(--body); font-weight:800; background:var(--panel); border-radius:5px; padding:1px 7px; border-bottom:2px solid #170d22}
 .tag1{color:var(--p1); font-weight:800} .tag2{color:var(--p2); font-weight:800}
+/* players, top-10 and game log */
+.setup{display:flex; flex-direction:column; align-items:center; gap:8px; width:100%}
+.names{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
+.field{display:flex; flex-direction:column; gap:3px; text-align:left; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.12em}
+.field input{font:800 16px var(--body); width:190px; max-width:70vw; box-sizing:border-box; padding:7px 12px; border-radius:10px; border:2px solid var(--panel); background:var(--paper); color:var(--ink); text-transform:none; letter-spacing:0}
+.field input:focus{outline:none; border-color:var(--accent)}
+.field input[aria-invalid="true"]{border-color:var(--late)}
+.overlay > p.err{color:var(--late); font-size:14px; margin:0}
+.actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; flex:none}
+button.ghost{font-family:var(--body); font-weight:800; font-size:15px; background:rgba(33,20,47,.8); color:var(--paper); border:2px solid var(--panel); border-radius:999px; padding:8px 20px; cursor:pointer}
+.scores b.who{max-width:9em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:18px}
+.board{display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap:14px}
+.panel{background:var(--card); border-radius:14px; padding:14px 16px; min-width:0; box-shadow:0 0 0 2px var(--panel)}
+.panel-head{display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px}
+.panel h2{font-family:var(--display); font-weight:400; font-size:18px; margin:0; color:var(--accent)}
+.tabs{display:flex; gap:4px}
+.tabs button{font:800 12px var(--body); background:transparent; color:var(--paper); border:2px solid var(--panel); border-radius:999px; padding:3px 10px; cursor:pointer}
+.tabs button[aria-selected="true"]{border-color:var(--accent); color:var(--accent)}
+.rows{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:3px; font-variant-numeric:tabular-nums}
+.rows li{display:grid; grid-template-columns:30px minmax(0,1fr) auto; gap:8px; align-items:center; padding:6px 8px; border-radius:8px}
+.rows.log li{grid-template-columns:minmax(0,1fr) auto}
+.rows li:nth-child(odd){background:rgba(255,244,226,.04)}
+.rows li.me{background:rgba(255,207,61,.14)}
+.rows li.empty{display:block; opacity:.7; background:none; padding:6px 0}
+.rank{font-family:var(--display); font-size:16px; color:rgba(255,244,226,.6)}
+.rows li:nth-child(1) .rank{color:var(--accent)}
+.who-cell{min-width:0}
+.who-cell b{display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.who-cell small, .res small{display:block; font-size:12px; opacity:.65; font-weight:600}
+.res{text-align:right; font-weight:800}
+.ok{color:var(--ok)} .bad{color:var(--late)}
+.board-note{font-size:12px; opacity:.65; margin:10px 0 0}
 </style>
 </head>
 <body>
@@ -79,27 +112,34 @@ kbd{font-family:var(--body); font-weight:800; background:var(--panel); border-ra
   <div class="hud">
     <h1>Дунайский дракон</h1>
     <div class="scores" id="hudSingle">
+      <span><small>Игрок</small><b class="who" id="who">—</b></span>
       <span><small>Звонок</small><b>8:25</b></span>
       <span><small>Лучший приход</small><b id="best">—</b></span>
     </div>
     <div class="scores" id="hudDual" hidden>
-      <span class="p1"><small>Игрок 1 · WASD</small><b id="w1">0</b></span>
+      <span class="p1"><small id="h1">Игрок 1 · WASD</small><b id="w1">0</b></span>
       <span class="vs">:</span>
-      <span class="p2"><small>Игрок 2 · стрелки</small><b id="w2">0</b></span>
+      <span class="p2"><small id="h2">Игрок 2 · стрелки</small><b id="w2">0</b></span>
     </div>
   </div>
   <div class="stage" id="stage">
     <canvas id="cv"></canvas>
     <button class="fire" id="fire" type="button" aria-label="Выстрел">Огонь</button>
     <div class="overlay" id="ov">
-      <div class="modes" role="group" aria-label="Режим игры">
-        <button type="button" id="m1" aria-pressed="true">1 игрок</button>
-        <button type="button" id="m2" aria-pressed="false">2 игрока: дуэль</button>
-      </div>
-      <div class="modes" role="group" aria-label="Сложность">
-        <button type="button" id="d-easy" data-diff="easy" aria-pressed="false">Лёгкая · 30 с</button>
-        <button type="button" id="d-medium" data-diff="medium" aria-pressed="true">Средняя · 1 мин</button>
-        <button type="button" id="d-hard" data-diff="hard" aria-pressed="false">Сложная · 2 мин</button>
+      <div class="setup" id="setup">
+        <div class="modes" role="group" aria-label="Режим игры">
+          <button type="button" id="m1" aria-pressed="true">1 игрок</button>
+          <button type="button" id="m2" aria-pressed="false">2 игрока: дуэль</button>
+        </div>
+        <div class="modes" role="group" aria-label="Сложность">
+          <button type="button" id="d-easy" data-diff="easy" aria-pressed="false">Лёгкая · 30 с</button>
+          <button type="button" id="d-medium" data-diff="medium" aria-pressed="true">Средняя · 1 мин</button>
+          <button type="button" id="d-hard" data-diff="hard" aria-pressed="false">Сложная · 2 мин</button>
+        </div>
+        <div class="names">
+          <label class="field" for="n1"><span id="n1Label">Твоё имя</span><input id="n1" type="text" maxlength="20" autocomplete="nickname" placeholder="Например, Миша"></label>
+          <label class="field" for="n2" id="n2Wrap" hidden><span>Игрок 2 · стрелки</span><input id="n2" type="text" maxlength="20" autocomplete="off" placeholder="Имя второго игрока"></label>
+        </div>
       </div>
       <h2 id="ovTitle"></h2>
       <p id="ovText"></p>
@@ -108,10 +148,32 @@ kbd{font-family:var(--body); font-weight:800; background:var(--panel); border-ra
         <p id="noteBody"></p>
         <div class="note-sign">Классный руководитель, DISV</div>
       </div>
-      <button id="go" type="button">Бежать</button>
+      <p class="err" id="nameErr" role="alert" hidden></p>
+      <div class="actions">
+        <button id="go" type="button">Бежать</button>
+        <button id="menu" class="ghost" type="button" hidden>Меню</button>
+      </div>
     </div>
   </div>
   <p class="hint" id="hint"></p>
+  <section class="board" aria-label="Результаты">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Топ-10</h2>
+        <div class="tabs" role="tablist" aria-label="Сложность таблицы">
+          <button type="button" role="tab" data-board="easy" aria-selected="false">Лёгкая</button>
+          <button type="button" role="tab" data-board="medium" aria-selected="true">Средняя</button>
+          <button type="button" role="tab" data-board="hard" aria-selected="false">Сложная</button>
+        </div>
+      </div>
+      <ol class="rows" id="top"></ol>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>Журнал игр</h2></div>
+      <ul class="rows log" id="log"></ul>
+      <p class="board-note" id="boardNote"></p>
+    </div>
+  </section>
 </div>
 
 <script>
@@ -171,20 +233,135 @@ const fmt = s => { s = Math.floor(s); const h = Math.floor(s/3600), m = Math.flo
 let mode = 'single', state = 'ready', lanes = [], wins = [0,0], matchOver = false;
 let last = 0, loopToken = 0, canStartAt = 0;
 const clouds = Array.from({length:6}, (_,i)=>({x0:i*170+Math.random()*80, y:28+Math.random()*60, s:.6+Math.random()*.7}));
-let best = 0;
-const bestKey = () => 'disv-best-' + diff;
-function loadBest(){
-  best = 0;
-  try { best = +localStorage.getItem(bestKey()) || 0; } catch(e){}
-  $('best').textContent = best ? fmt(best) : '—';
-}
-loadBest();
 const fillText = s => s.replace('{start}', fmt(START)).replace('{len}', DIFF[diff].len);
+
+// ---------- players, game log, top-10 ----------
+const n1 = $('n1'), n2 = $('n2'), n2Wrap = $('n2Wrap'), nameErr = $('nameErr'), setup = $('setup'), menuBtn = $('menu');
+const topEl = $('top'), logEl = $('log'), boardNoteEl = $('boardNote');
+const BEST_FIELD = {easy:'bestEasy', medium:'bestMedium', hard:'bestHard'};
+const DIFF_SHORT = {easy:'лёгкая', medium:'средняя', hard:'сложная'};
+const LOG_KEEP = 40, LS_PLAYERS = 'disv-players';
+const cleanName = s => String(s || '').replace(/\s+/g, ' ').trim().slice(0, 20);
+const pid = name => { let h = 2166136261; for (const ch of cleanName(name).toLowerCase()) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); } return 'p' + (h >>> 0).toString(36); };
+const laneName = i => cleanName((i ? n2 : n1).value) || PAL[i].name;
+const num = v => typeof v === 'number' && Number.isFinite(v) ? v : null;
+let players = {}, playersRef = null, writeChain = Promise.resolve(), boardDiff = 'medium';
+
+try { n1.value = localStorage.getItem('disv-name1') || ''; n2.value = localStorage.getItem('disv-name2') || ''; } catch(e){}
+function loadLocal(){ try { const o = JSON.parse(localStorage.getItem(LS_PLAYERS) || '{}'); players = o && typeof o === 'object' ? o : {}; } catch(e){ players = {}; } }
+function saveLocal(){ try { localStorage.setItem(LS_PLAYERS, JSON.stringify(players)); } catch(e){} }
+function setBoardNote(t){ boardNoteEl.textContent = t; }
+
+function savePlayer(id, body){
+  if (!playersRef){ saveLocal(); return; }
+  const ref = playersRef;
+  writeChain = writeChain.then(() => ref.doc(id).set(body)).catch(err => {
+    setBoardNote(err && err.code === 'quota_exceeded'
+      ? 'Общая таблица переполнена, результат не сохранён.'
+      : 'Не удалось сохранить результат в общую таблицу. Проверь, что у тебя есть доступ на изменение игры.');
+  });
+}
+function recordGame(entries){
+  const at = Date.now();
+  for (const e of entries){
+    const id = pid(e.name), prev = players[id] || {};
+    const arrive = Math.floor(e.arrive), margin = DEADLINE - arrive, f = BEST_FIELD[diff];
+    const body = { ...prev, name:e.name, games:(num(prev.games) || 0) + 1, lastAt:at,
+      log:[{at, diff, mode, arrive, hits:e.hits, kills:e.kills, vs:e.vs || null, won:e.won ?? null},
+           ...(Array.isArray(prev.log) ? prev.log : [])].slice(0, LOG_KEEP) };
+    if (num(prev[f]) === null || margin > prev[f]){ body[f] = margin; body[f + 'At'] = at; }
+    if (e.won === true) body.wins = (num(prev.wins) || 0) + 1;
+    players[id] = body;
+    savePlayer(id, body);
+  }
+  renderBoard(); loadBest();
+}
+function ranking(d){
+  const f = BEST_FIELD[d];
+  return Object.entries(players)
+    .filter(([, p]) => p && num(p[f]) !== null && cleanName(p.name))
+    .sort(([, a], [, b]) => b[f] - a[f] || (num(a[f + 'At']) || 0) - (num(b[f + 'At']) || 0));
+}
+function placeOf(name){ const i = ranking(diff).findIndex(([id]) => id === pid(name)); return i >= 0 && i < 10 ? i + 1 : 0; }
+function loadBest(){
+  const name = cleanName(n1.value), me = name ? players[pid(name)] : null;
+  const v = me ? num(me[BEST_FIELD[diff]]) : null;
+  $('best').textContent = v === null ? '—' : fmt(DEADLINE - v);
+  $('who').textContent = name || '—';
+}
+function el(tag, cls, text){ const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; }
+function marginText(m){ return m >= 0 ? `за ${m} с до звонка` : `опоздал на ${-m} с`; }
+function renderBoard(){
+  const meId = cleanName(n1.value) ? pid(n1.value) : null, f = BEST_FIELD[boardDiff];
+  document.querySelectorAll('[data-board]').forEach(b => b.setAttribute('aria-selected', b.dataset.board === boardDiff));
+  topEl.replaceChildren();
+  const rows = ranking(boardDiff).slice(0, 10);
+  if (!rows.length) topEl.append(el('li', 'empty', 'На этой сложности ещё никто не добежал до школы. Будь первым!'));
+  rows.forEach(([id, p], i) => {
+    const li = el('li', id === meId ? 'me' : '');
+    const m = p[f];
+    li.append(el('span', 'rank', String(i + 1)));
+    const who = el('span', 'who-cell'); who.append(el('b', '', cleanName(p.name)), el('small', '', `игр: ${num(p.games) || 0}`));
+    const res = el('span', 'res ' + (m >= 0 ? 'ok' : 'bad'), fmt(DEADLINE - m)); res.append(el('small', '', marginText(m)));
+    li.append(who, res); topEl.append(li);
+  });
+  logEl.replaceChildren();
+  const games = [];
+  for (const [id, p] of Object.entries(players)){
+    if (!p || !Array.isArray(p.log)) continue;
+    for (const g of p.log) if (g && num(g.at) !== null && num(g.arrive) !== null) games.push({id, name:cleanName(p.name), g});
+  }
+  games.sort((a, b) => b.g.at - a.g.at);
+  if (!games.length) logEl.append(el('li', 'empty', 'Здесь появится каждый забег: кто бежал, когда пришёл и сколько раз споткнулся.'));
+  for (const {id, name, g} of games.slice(0, 15)){
+    const li = el('li', id === meId ? 'me' : ''), m = DEADLINE - g.arrive;
+    const when = new Date(g.at).toLocaleString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+    let what = `${DIFF_SHORT[g.diff] || ''} · столкновений: ${num(g.hits) || 0}`;
+    if (g.mode === 'dual') what = `дуэль с ${cleanName(g.vs) || 'соперником'}${g.won === true ? ', победа' : g.won === false ? ', поражение' : ', ничья'} · ` + what;
+    const who = el('span', 'who-cell'); who.append(el('b', '', name), el('small', '', `${when} · ${what}`));
+    const res = el('span', 'res ' + (m >= 0 ? 'ok' : 'bad'), fmt(g.arrive)); res.append(el('small', '', m >= 0 ? 'вовремя' : 'опоздал'));
+    li.append(who, res); logEl.append(li);
+  }
+}
+document.querySelectorAll('[data-board]').forEach(b => b.addEventListener('click', () => { boardDiff = b.dataset.board; renderBoard(); }));
+[n1, n2].forEach(inp => inp.addEventListener('input', () => { inp.removeAttribute('aria-invalid'); nameErr.hidden = true; loadBest(); renderBoard(); }));
+function checkNames(){
+  const a = cleanName(n1.value), b = cleanName(n2.value);
+  let bad = null, msg = '';
+  if (a.length < 2){ bad = n1; msg = 'Напиши своё имя: хотя бы 2 буквы.'; }
+  else if (mode === 'dual' && b.length < 2){ bad = n2; msg = 'Напиши имя второго игрока.'; }
+  else if (mode === 'dual' && pid(a) === pid(b)){ bad = n2; msg = 'У игроков должны быть разные имена.'; }
+  if (bad){ setup.hidden = false; menuBtn.hidden = true; bad.setAttribute('aria-invalid', 'true'); nameErr.textContent = msg; nameErr.hidden = false; bad.focus(); return false; }
+  n1.value = a; if (mode === 'dual') n2.value = b;
+  try { localStorage.setItem('disv-name1', a); if (mode === 'dual') localStorage.setItem('disv-name2', b); } catch(e){}
+  return true;
+}
+
+loadLocal(); renderBoard(); loadBest();
+setBoardNote('Результаты сохраняются на этом устройстве.');
+(async () => {
+  let db = null;
+  try { db = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch(e){ db = null; }
+  if (!db) return;
+  playersRef = db.collection('players');
+  setBoardNote('Загружаю общую таблицу…');
+  const timer = setTimeout(() => setBoardNote('Общая таблица пока не отвечает. Результаты могут быть неполными.'), 10000);
+  playersRef.onSnapshot(snap => {
+    const next = {};
+    for (const d of snap.docs){ const v = d.data(); if (v && typeof v === 'object') next[d.id] = v; }
+    players = next;
+    if (!snap.metadata.fromCache){ clearTimeout(timer); setBoardNote('Общая таблица: её видят все, кто открывает игру.'); }
+    renderBoard(); loadBest();
+  }, () => {
+    clearTimeout(timer); playersRef = null; loadLocal(); renderBoard(); loadBest();
+    setBoardNote('Общая таблица недоступна, результаты сохраняются на этом устройстве.');
+  });
+})();
 
 function mulberry32(a){ return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
 function makeLane(i, seed){
-  return { i, pal:PAL[i], rng:mulberry32(seed),
+  return { i, pal:PAL[i], name:laneName(i), rng:mulberry32(seed),
     dino:{x:90, y:GROUND, vy:0, w:44, h:52, onGround:true, leg:0},
     obstacles:[], birds:[], shots:[], dust:[], bits:[], popups:[],
     px:0, t:0, speed:360, penalty:0, stumble:0, inv:0, hits:0, kills:0,
@@ -274,6 +451,10 @@ const KEYS = {
 };
 addEventListener('keydown', e => {
   const k = KEYS[mode], c = e.code;
+  if (e.target.tagName === 'INPUT'){
+    if (c === 'Enter' && state !== 'run'){ e.preventDefault(); goBtn.click(); }
+    return;
+  }
   if (!(c in k.jump || c in k.fire || c === 'Space' || c === 'Enter')) return;
   if (e.target.tagName === 'BUTTON' && (c === 'Space' || c === 'Enter') && state !== 'run') return;
   e.preventDefault();
@@ -288,7 +469,7 @@ addEventListener('keydown', e => {
 });
 addEventListener('keyup', e => { const k = KEYS[mode]; if (e.code in k.jump) release(lanes[k.jump[e.code]]); });
 stage.addEventListener('pointerdown', e => {
-  if (e.target.closest('button') || e.target.closest('.note')) return;
+  if (e.target.closest('button, input, label, .note, .setup')) return;
   if (mode !== 'single') return;
   e.preventDefault();
   if (state !== 'run'){ if (!ov.hidden && performance.now() > canStartAt) goBtn.click(); return; }
@@ -298,7 +479,9 @@ addEventListener('pointerup', () => { if (mode === 'single') release(lanes[0]); 
 fireBtn.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); shoot(lanes[0]); });
 fireBtn.addEventListener('click', e => { e.stopPropagation(); if (e.detail === 0) shoot(lanes[0]); });
 goBtn.addEventListener('click', e => {
-  e.stopPropagation(); goBtn.blur();
+  e.stopPropagation();
+  if (!checkNames()) return;
+  goBtn.blur();
   if (matchOver){ wins = [0,0]; matchOver = false; updateWins(); }
   start();
 });
@@ -307,7 +490,7 @@ m2.addEventListener('click', e => { e.stopPropagation(); m2.blur(); setMode('dua
 const diffBtns = [...document.querySelectorAll('[data-diff]')];
 diffBtns.forEach(btn => btn.addEventListener('click', e => {
   e.stopPropagation(); btn.blur();
-  diff = btn.dataset.diff; applyDiff(); loadBest();
+  diff = btn.dataset.diff; boardDiff = diff; applyDiff(); loadBest(); renderBoard();
   diffBtns.forEach(b => b.setAttribute('aria-pressed', b === btn));
   setMode(mode);
 }));
@@ -318,6 +501,9 @@ function setMode(m){
   stage.classList.toggle('dual', m === 'dual'); wrap.classList.toggle('dual', m === 'dual');
   $('hudSingle').hidden = m === 'dual'; $('hudDual').hidden = m !== 'dual';
   fireBtn.hidden = m === 'dual';
+  setup.hidden = false; menuBtn.hidden = true; nameErr.hidden = true;
+  n2Wrap.hidden = m !== 'dual';
+  $('n1Label').textContent = m === 'dual' ? 'Игрок 1 · WASD' : 'Твоё имя';
   ovTitle.textContent = TEXT[m].title; ovText.textContent = fillText(TEXT[m].text); ovText.hidden = false; note.hidden = true;
   hint.innerHTML = TEXT[m].hint;
   goBtn.textContent = 'Бежать';
@@ -325,8 +511,12 @@ function setMode(m){
 }
 function updateWins(){ $('w1').textContent = wins[0]; $('w2').textContent = wins[1]; }
 
+menuBtn.addEventListener('click', e => { e.stopPropagation(); menuBtn.blur(); setMode(mode); });
+
 function start(){
-  setupLanes(); state = 'run'; ov.hidden = true; note.hidden = true; fireBtn.hidden = mode === 'dual';
+  setupLanes();
+  $('h1').textContent = `${lanes[0].name} · WASD`;
+  if (lanes[1]) $('h2').textContent = `${lanes[1].name} · стрелки`; state = 'run'; ov.hidden = true; note.hidden = true; fireBtn.hidden = mode === 'dual';
   const tok = ++loopToken; last = performance.now();
   requestAnimationFrame(t => loop(t, tok));
 }
@@ -335,34 +525,40 @@ function showOverlay(title, text, btn, noteText){
   ovText.textContent = text; ovText.hidden = !text;
   if (noteText){ noteBody.textContent = noteText; note.hidden = false; } else note.hidden = true;
   goBtn.textContent = btn; fireBtn.hidden = true;
+  setup.hidden = true; menuBtn.hidden = false; nameErr.hidden = true;
   canStartAt = performance.now() + 900;
   ov.hidden = false;
 }
 function endSingle(L){
   state = 'end';
   const c = L.arriveClock, late = c > DEADLINE;
-  if (!best || c < best){ best = c; $('best').textContent = fmt(best); try{ localStorage.setItem(bestKey(), best); }catch(e){} }
-  const stats = `Столкновений: ${L.hits}, сожжено самолётиков: ${L.kills}.`;
+  recordGame([{name:L.name, arrive:c, hits:L.hits, kills:L.kills}]);
+  const place = placeOf(L.name);
+  const stats = `Столкновений: ${L.hits}, сожжено самолётиков: ${L.kills}.` + (place ? ` Место в топ-10: ${place}.` : '');
   if (late) showOverlay('Опоздал в школу!', stats, 'Попробовать ещё раз',
-    `Ученик опоздал в школу: пришёл в ${fmt(c)}, а уроки начинаются в 8:25. Завтра прийти в школу с родителями!`);
-  else showOverlay('Успел к звонку!', `Пришёл в ${fmt(c)}, за ${DEADLINE - Math.floor(c)} с до звонка. ${stats}`, 'Ещё раз');
+    `Ученик: ${L.name}. Опоздал в школу: пришёл в ${fmt(c)}, а уроки начинаются в 8:25. Завтра прийти в школу с родителями!`);
+  else showOverlay(`${L.name} успел к звонку!`, `Пришёл в ${fmt(c)}, за ${DEADLINE - Math.floor(c)} с до звонка. ${stats}`, 'Ещё раз');
 }
 function endRound(){
   state = 'end';
   const [a, b] = lanes, ca = Math.floor(a.arriveClock), cb = Math.floor(b.arriveClock);
-  const times = `Игрок 1 пришёл в ${fmt(ca)}, Игрок 2 в ${fmt(cb)}.`;
+  const tie = ca === cb, winner = tie ? null : (ca < cb ? a : b);
+  recordGame([
+    {name:a.name, arrive:a.arriveClock, hits:a.hits, kills:a.kills, vs:b.name, won: tie ? null : winner === a},
+    {name:b.name, arrive:b.arriveClock, hits:b.hits, kills:b.kills, vs:a.name, won: tie ? null : winner === b},
+  ]);
+  const times = `${a.name} пришёл в ${fmt(ca)}, ${b.name} в ${fmt(cb)}.`;
   const lateOnes = lanes.filter(L => L.arriveClock > DEADLINE);
   const noteText = lateOnes.length
-    ? `${lateOnes.map(L => L.pal.name).join(' и ')} ${lateOnes.length > 1 ? 'опоздали' : 'опоздал'} в школу, а уроки начинаются в 8:25. Завтра прийти в школу с родителями!`
+    ? `${lateOnes.length > 1 ? 'Ученики' : 'Ученик'}: ${lateOnes.map(L => L.name).join(' и ')}. ${lateOnes.length > 1 ? 'Опоздали' : 'Опоздал'} в школу, а уроки начинаются в 8:25. Завтра прийти в школу с родителями!`
     : null;
-  if (ca === cb){ showOverlay('Ничья!', `${times} Счёт ${wins[0]} : ${wins[1]}.`, 'Переиграть', noteText); return; }
-  const winner = ca < cb ? a : b;
+  if (tie){ showOverlay('Ничья!', `${times} Счёт ${wins[0]} : ${wins[1]}.`, 'Переиграть', noteText); return; }
   wins[winner.i]++; updateWins();
   if (wins[winner.i] >= WIN_ROUNDS){
     matchOver = true;
-    showOverlay(`${winner.pal.name} выигрывает матч!`, `${times} Итоговый счёт ${wins[0]} : ${wins[1]}.`, 'Новый матч', noteText);
+    showOverlay(`${winner.name} выигрывает матч!`, `${times} Итоговый счёт ${wins[0]} : ${wins[1]}.`, 'Новый матч', noteText);
   } else {
-    showOverlay(`${winner.pal.name} первым в школе!`, `${times} Счёт ${wins[0]} : ${wins[1]}.`, 'Следующий раунд', noteText);
+    showOverlay(`${winner.name} первым в школе!`, `${times} Счёт ${wins[0]} : ${wins[1]}.`, 'Следующий раунд', noteText);
   }
 }
 
@@ -721,7 +917,7 @@ function drawLaneHud(L){
     if (dual){
       ctx.fillStyle = L.pal.body; ctx.beginPath(); ctx.arc(x0+5, y0+8, 6, 0, Math.PI*2); ctx.fill();
       ctx.font = '14px Bungee, Impact, sans-serif'; ctx.textAlign = 'left'; ctx.fillStyle = '#fff4e2';
-      ctx.fillText(L.pal.name, x0+16, y0+13);
+      ctx.fillText(L.name.length > 9 ? L.name.slice(0, 8) + '…' : L.name, x0+16, y0+13);
     }
     for (let i=0;i<MAX_AMMO;i++){
       const cx = x0 + labelW + 6 + i*30, cy = y0 + 8;
