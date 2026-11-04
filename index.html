@@ -2,7 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Danube Dragon">
+<meta name="theme-color" content="#21142f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px)} body{margin:0} html{background:#21142f}</style>
 <title>Danube Dragon</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,16 +29,16 @@
 }
 html,body{min-height:100%}
 [hidden]{display:none!important}
-body{ margin:0;
+body{
   background:var(--ink); color:var(--paper); font-family:var(--body);
   display:flex; flex-direction:column; align-items:center; justify-content:safe center; gap:14px;
   padding-block:16px;
   padding-left:max(16px, env(safe-area-inset-left, 0px));
   padding-right:max(16px, env(safe-area-inset-right, 0px));
-  box-sizing:border-box; user-select:none; -webkit-user-select:none;
+  box-sizing:border-box; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent; touch-action:manipulation;
 }
 .wrap{width:100%; max-width:960px; display:flex; flex-direction:column; gap:10px}
-.wrap.dual{max-width:min(960px, calc((100vh - 150px) * 1.29))}
+.wrap.dual{max-width:min(960px, calc((100vh - 150px) * 1.29)); max-width:min(960px, calc((100dvh - 150px) * 1.29))}
 .hud{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap}
 h1{font-family:var(--display); font-weight:400; font-size:clamp(22px,4vw,34px); margin:0; color:var(--accent); letter-spacing:.02em; text-wrap:balance}
 .scores{display:flex; gap:18px; font-variant-numeric:tabular-nums; font-weight:800; align-items:flex-end}
@@ -38,7 +47,7 @@ h1{font-family:var(--display); font-weight:400; font-size:clamp(22px,4vw,34px); 
 .scores b{font-family:var(--display); font-weight:400; font-size:22px}
 .scores .p1 b{color:var(--p1)} .scores .p2 b{color:var(--p2)}
 .scores .vs{font-family:var(--display); font-size:16px; opacity:.6; align-self:center}
-.stage{position:relative; width:100%; aspect-ratio:800/310; max-width:100%; border-radius:14px; overflow:hidden; box-shadow:0 0 0 3px var(--panel), 0 18px 40px -18px #000; touch-action:manipulation; cursor:pointer}
+.stage{position:relative; width:100%; aspect-ratio:800/310; max-width:100%; border-radius:14px; overflow:hidden; box-shadow:0 0 0 3px var(--panel), 0 18px 40px -18px #000; touch-action:none; cursor:pointer}
 .stage.dual{aspect-ratio:800/620}
 canvas{display:block; width:100%; height:100%}
 .overlay{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:safe center; gap:10px; text-align:center; padding:14px 16px; background:rgba(33,20,47,.55); overflow:auto}
@@ -69,6 +78,34 @@ button:focus-visible{outline:3px solid var(--paper); outline-offset:3px}
 .fire{position:absolute; right:12px; bottom:12px; width:64px; height:64px; border-radius:50%; border:0; background:var(--fire); color:var(--paper); font-family:var(--display); font-size:13px; box-shadow:0 4px 0 #a83a17; cursor:pointer; touch-action:none; opacity:.92}
 .fire:active{transform:translateY(3px); box-shadow:0 1px 0 #a83a17}
 @media (hover:hover) and (pointer:fine){ .fire{width:52px; height:52px; font-size:11px} }
+/* on-screen controls for phones and tablets */
+.touch{position:absolute; inset:0; pointer-events:none}
+.tbtn{position:absolute; pointer-events:auto; width:clamp(96px, 24%, 200px); height:15%; min-height:34px; border-radius:999px; border:2px solid rgba(255,244,226,.6);
+  font-family:var(--display); font-size:clamp(12px, 2.4vw, 17px); color:var(--paper); cursor:pointer; touch-action:none; opacity:.82;
+  -webkit-user-select:none; user-select:none; -webkit-touch-callout:none}
+.tbtn.jump{left:calc(10px + env(safe-area-inset-left, 0px)); background:rgba(47,111,168,.85)}
+.tbtn.shoot{right:calc(10px + env(safe-area-inset-right, 0px)); background:rgba(255,107,61,.88)}
+.tbtn[data-lane="0"]{bottom:3%}
+.tbtn[data-lane="1"]{display:none}
+.stage.dual .tbtn{height:7%; min-height:24px; font-size:clamp(11px, 2vw, 15px)}
+.stage.dual .tbtn[data-lane="0"]{bottom:calc(50% + 1.5%)}
+.stage.dual .tbtn[data-lane="1"]{display:block; bottom:1.5%}
+.tbtn.down{transform:scale(.92); opacity:1}
+.rotate{display:none; margin:0; padding:10px 14px; border-radius:12px; background:var(--card); box-shadow:0 0 0 2px var(--panel); font-weight:800; text-align:center}
+@media (pointer:coarse) and (orientation:portrait){ .rotate{display:block} }
+/* phone held sideways: give the game the whole height */
+@media (max-height:520px){
+  body{justify-content:flex-start; gap:8px; padding-block:6px}
+  .wrap{max-width:min(960px, calc((100vh - 64px) * 2.58)); max-width:min(960px, calc((100dvh - 64px) * 2.58)); gap:6px}
+  .wrap.dual{max-width:min(960px, calc((100vh - 64px) * 1.29)); max-width:min(960px, calc((100dvh - 64px) * 1.29))}
+  h1{font-size:20px} .scores b{font-size:17px} .scores small{font-size:9px}
+  .hint{display:none}
+  .overlay{gap:6px; padding:8px 12px}
+  .overlay h2{font-size:22px}
+  .overlay > p{font-size:12px; line-height:1.3}
+  .modes button{font-size:12px; padding:3px 11px}
+  .field input{padding:5px 10px}
+}
 .hint{font-size:14px; opacity:.75; text-align:center; margin:0; line-height:1.9}
 kbd{font-family:var(--body); font-weight:800; background:var(--panel); border-radius:5px; padding:1px 7px; border-bottom:2px solid #170d22}
 .tag1{color:var(--p1); font-weight:800} .tag2{color:var(--p2); font-weight:800}
@@ -125,6 +162,12 @@ button.ghost{font-family:var(--body); font-weight:800; font-size:15px; backgroun
   <div class="stage" id="stage">
     <canvas id="cv"></canvas>
     <button class="fire" id="fire" type="button" aria-label="Shoot">Fire</button>
+    <div class="touch" id="touch" hidden>
+      <button type="button" class="tbtn jump" data-lane="0" data-act="jump" aria-label="Player 1 jump">Jump</button>
+      <button type="button" class="tbtn shoot" data-lane="0" data-act="fire" aria-label="Player 1 fire">Fire</button>
+      <button type="button" class="tbtn jump" data-lane="1" data-act="jump" aria-label="Player 2 jump">Jump</button>
+      <button type="button" class="tbtn shoot" data-lane="1" data-act="fire" aria-label="Player 2 fire">Fire</button>
+    </div>
     <div class="overlay" id="ov">
       <div class="setup" id="setup">
         <div class="modes" role="group" aria-label="Game mode">
@@ -156,6 +199,7 @@ button.ghost{font-family:var(--body); font-weight:800; font-size:15px; backgroun
     </div>
   </div>
   <p class="hint" id="hint"></p>
+  <p class="rotate">Turn your phone sideways for a bigger screen.</p>
   <section class="board" aria-label="Results">
     <div class="panel">
       <div class="panel-head">
@@ -569,6 +613,27 @@ stage.addEventListener('pointerdown', e => {
   jump(lanes[0]);
 });
 addEventListener('pointerup', () => { if (mode === 'single') release(lanes[0]); });
+const isTouch = matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0 && !matchMedia('(hover:hover)').matches;
+const touchEl = $('touch');
+touchEl.hidden = !isTouch;
+touchEl.querySelectorAll('.tbtn').forEach(btn => {
+  const lane = () => lanes[+btn.dataset.lane];
+  btn.addEventListener('pointerdown', e => {
+    e.preventDefault(); e.stopPropagation();
+    try { btn.setPointerCapture(e.pointerId); } catch(err){}
+    btn.classList.add('down');
+    if (state !== 'run') return;
+    if (btn.dataset.act === 'jump') jump(lane()); else shoot(lane());
+  });
+  const up = e => { e.stopPropagation(); btn.classList.remove('down'); if (btn.dataset.act === 'jump') release(lane()); };
+  btn.addEventListener('pointerup', up); btn.addEventListener('pointercancel', up);
+  btn.addEventListener('click', e => e.stopPropagation());
+  btn.addEventListener('contextmenu', e => e.preventDefault());
+});
+const TOUCH_HINT = {
+  single:'Tap <kbd>Jump</kbd> (hold it to jump higher) and <kbd>Fire</kbd>. Tapping anywhere on the game also jumps.',
+  dual:'Each player has their own <kbd>Jump</kbd> and <kbd>Fire</kbd> buttons on their half of the screen.',
+};
 fireBtn.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); shoot(lanes[0]); });
 fireBtn.addEventListener('click', e => { e.stopPropagation(); if (e.detail === 0) shoot(lanes[0]); });
 goBtn.addEventListener('click', e => {
@@ -593,12 +658,12 @@ function setMode(m){
   m1.setAttribute('aria-pressed', m === 'single'); m2.setAttribute('aria-pressed', m === 'dual');
   stage.classList.toggle('dual', m === 'dual'); wrap.classList.toggle('dual', m === 'dual');
   $('hudSingle').hidden = m === 'dual'; $('hudDual').hidden = m !== 'dual';
-  fireBtn.hidden = m === 'dual';
+  fireBtn.hidden = m === 'dual' || isTouch;
   setup.hidden = false; menuBtn.hidden = true; nameErr.hidden = true;
   n2Wrap.hidden = m !== 'dual';
   $('n1Label').textContent = m === 'dual' ? 'Player 1 · WASD' : 'Your name';
   ovTitle.textContent = TEXT[m].title; ovText.textContent = fillText(TEXT[m].text); ovText.hidden = false; note.hidden = true;
-  hint.innerHTML = TEXT[m].hint;
+  hint.innerHTML = isTouch ? TOUCH_HINT[m] : TEXT[m].hint;
   goBtn.textContent = 'Run';
   updateWins(); setupLanes(); sampleScene(); resize();
 }
@@ -608,8 +673,8 @@ menuBtn.addEventListener('click', e => { e.stopPropagation(); menuBtn.blur(); se
 
 function start(){
   setupLanes();
-  $('h1').textContent = `${lanes[0].name} · WASD`;
-  if (lanes[1]) $('h2').textContent = `${lanes[1].name} · arrows`; state = 'run'; ov.hidden = true; note.hidden = true; fireBtn.hidden = mode === 'dual';
+  $('h1').textContent = isTouch ? lanes[0].name : `${lanes[0].name} · WASD`;
+  if (lanes[1]) $('h2').textContent = isTouch ? lanes[1].name : `${lanes[1].name} · arrows`; state = 'run'; ov.hidden = true; note.hidden = true; fireBtn.hidden = mode === 'dual' || isTouch;
   const tok = ++loopToken; last = performance.now();
   requestAnimationFrame(t => loop(t, tok));
 }
@@ -1193,5 +1258,6 @@ addEventListener('resize', resize);
 new ResizeObserver(resize).observe(stage);
 })();
 </script>
+<script>if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
 </body>
 </html>
