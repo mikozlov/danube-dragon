@@ -241,11 +241,16 @@ const topEl = $('top'), logEl = $('log'), boardNoteEl = $('boardNote');
 const BEST_FIELD = {easy:'bestEasy', medium:'bestMedium', hard:'bestHard'};
 const DIFF_SHORT = {easy:'лёгкая', medium:'средняя', hard:'сложная'};
 const LOG_KEEP = 40, LS_PLAYERS = 'disv-players';
-const cleanName = s => String(s || '').replace(/\s+/g, ' ').trim().slice(0, 20);
+const cleanName = s => String(s || '').replace(/[^\p{L}\p{N} .'\-]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 20);
 const pid = name => { let h = 2166136261; for (const ch of cleanName(name).toLowerCase()) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); } return 'p' + (h >>> 0).toString(36); };
 const laneName = i => cleanName((i ? n2 : n1).value) || PAL[i].name;
 const num = v => typeof v === 'number' && Number.isFinite(v) ? v : null;
 let players = {}, playersRef = null, writeChain = Promise.resolve(), boardDiff = 'medium';
+// Shared table outside Claude (GitHub Pages): Supabase REST. Inside Claude the artifact's own db is used.
+const SUPABASE_URL = 'https://fwkulsvvmdslfonrcuku.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_yia5h4z5upBwiPKw2r_Scw_-rSHZ8hx';
+const useSupabase = !window.claude && !/claude/i.test(location.hostname);
+const remote = {top:{easy:[], medium:[], hard:[]}, log:[], mine:{}};
 
 try { n1.value = localStorage.getItem('disv-name1') || ''; n2.value = localStorage.getItem('disv-name2') || ''; } catch(e){}
 function loadLocal(){ try { const o = JSON.parse(localStorage.getItem(LS_PLAYERS) || '{}'); players = o && typeof o === 'object' ? o : {}; } catch(e){ players = {}; } }
@@ -262,6 +267,7 @@ function savePlayer(id, body){
   });
 }
 function recordGame(entries){
+  if (useSupabase){ recordRemote(entries); return; }
   const at = Date.now();
   for (const e of entries){
     const id = pid(e.name), prev = players[id] || {};
@@ -282,49 +288,129 @@ function ranking(d){
     .filter(([, p]) => p && num(p[f]) !== null && cleanName(p.name))
     .sort(([, a], [, b]) => b[f] - a[f] || (num(a[f + 'At']) || 0) - (num(b[f + 'At']) || 0));
 }
-function placeOf(name){ const i = ranking(diff).findIndex(([id]) => id === pid(name)); return i >= 0 && i < 10 ? i + 1 : 0; }
+function topRows(d){
+  if (useSupabase) return remote.top[d];
+  const f = BEST_FIELD[d];
+  return ranking(d).slice(0, 10).map(([id, p]) => ({key:id, name:cleanName(p.name), margin:p[f], games:num(p.games) || 0}));
+}
+function logRows(){
+  if (useSupabase) return remote.log;
+  const rows = [];
+  for (const [id, p] of Object.entries(players)){
+    if (!p || !Array.isArray(p.log)) continue;
+    for (const g of p.log) if (g && num(g.at) !== null && num(g.arrive) !== null)
+      rows.push({key:id, name:cleanName(p.name), at:g.at, diff:g.diff, mode:g.mode, arrive:g.arrive, hits:g.hits, vs:g.vs, won:g.won});
+  }
+  return rows.sort((a, b) => b.at - a.at).slice(0, 15);
+}
+function placeOf(name){ const i = topRows(diff).findIndex(r => r.key === pid(name)); return i >= 0 ? i + 1 : 0; }
 function loadBest(){
-  const name = cleanName(n1.value), me = name ? players[pid(name)] : null;
-  const v = me ? num(me[BEST_FIELD[diff]]) : null;
+  const name = cleanName(n1.value);
+  let v = null;
+  if (name && useSupabase){
+    const k = diff + '|' + pid(name);
+    v = k in remote.mine ? remote.mine[k] : (topRows(diff).find(r => r.key === pid(name)) || {}).margin ?? null;
+  } else if (name){
+    const me = players[pid(name)]; v = me ? num(me[BEST_FIELD[diff]]) : null;
+  }
   $('best').textContent = v === null ? '—' : fmt(DEADLINE - v);
   $('who').textContent = name || '—';
 }
 function el(tag, cls, text){ const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; }
 function marginText(m){ return m >= 0 ? `за ${m} с до звонка` : `опоздал на ${-m} с`; }
 function renderBoard(){
-  const meId = cleanName(n1.value) ? pid(n1.value) : null, f = BEST_FIELD[boardDiff];
+  const meId = cleanName(n1.value) ? pid(n1.value) : null;
   document.querySelectorAll('[data-board]').forEach(b => b.setAttribute('aria-selected', b.dataset.board === boardDiff));
   topEl.replaceChildren();
-  const rows = ranking(boardDiff).slice(0, 10);
+  const rows = topRows(boardDiff);
   if (!rows.length) topEl.append(el('li', 'empty', 'На этой сложности ещё никто не добежал до школы. Будь первым!'));
-  rows.forEach(([id, p], i) => {
-    const li = el('li', id === meId ? 'me' : '');
-    const m = p[f];
+  rows.forEach((r, i) => {
+    const li = el('li', r.key === meId ? 'me' : ''), m = r.margin;
     li.append(el('span', 'rank', String(i + 1)));
-    const who = el('span', 'who-cell'); who.append(el('b', '', cleanName(p.name)), el('small', '', `игр: ${num(p.games) || 0}`));
+    const who = el('span', 'who-cell'); who.append(el('b', '', r.name), el('small', '', `игр: ${r.games}`));
     const res = el('span', 'res ' + (m >= 0 ? 'ok' : 'bad'), fmt(DEADLINE - m)); res.append(el('small', '', marginText(m)));
     li.append(who, res); topEl.append(li);
   });
   logEl.replaceChildren();
-  const games = [];
-  for (const [id, p] of Object.entries(players)){
-    if (!p || !Array.isArray(p.log)) continue;
-    for (const g of p.log) if (g && num(g.at) !== null && num(g.arrive) !== null) games.push({id, name:cleanName(p.name), g});
-  }
-  games.sort((a, b) => b.g.at - a.g.at);
+  const games = logRows();
   if (!games.length) logEl.append(el('li', 'empty', 'Здесь появится каждый забег: кто бежал, когда пришёл и сколько раз споткнулся.'));
-  for (const {id, name, g} of games.slice(0, 15)){
-    const li = el('li', id === meId ? 'me' : ''), m = DEADLINE - g.arrive;
+  for (const g of games){
+    const li = el('li', g.key === meId ? 'me' : ''), m = DEADLINE - g.arrive;
     const when = new Date(g.at).toLocaleString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
     let what = `${DIFF_SHORT[g.diff] || ''} · столкновений: ${num(g.hits) || 0}`;
     if (g.mode === 'dual') what = `дуэль с ${cleanName(g.vs) || 'соперником'}${g.won === true ? ', победа' : g.won === false ? ', поражение' : ', ничья'} · ` + what;
-    const who = el('span', 'who-cell'); who.append(el('b', '', name), el('small', '', `${when} · ${what}`));
+    const who = el('span', 'who-cell'); who.append(el('b', '', g.name), el('small', '', `${when} · ${what}`));
     const res = el('span', 'res ' + (m >= 0 ? 'ok' : 'bad'), fmt(g.arrive)); res.append(el('small', '', m >= 0 ? 'вовремя' : 'опоздал'));
     li.append(who, res); logEl.append(li);
   }
 }
+
+// ---------- Supabase ----------
+async function sb(path, opts = {}){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {...opts, headers:{apikey:SUPABASE_KEY, 'Content-Type':'application/json', ...(opts.headers || {})}});
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const t = await r.text();
+  return t ? JSON.parse(t) : null;
+}
+const mapTop = rows => (Array.isArray(rows) ? rows : [])
+  .map(r => ({key:pid(r.name), name:cleanName(r.name), margin:num(r.margin), games:num(r.games) || 0}))
+  .filter(r => r.name && r.margin !== null);
+let refreshing = null, mineTimer = 0;
+function refreshRemote(){
+  if (refreshing) return refreshing;
+  refreshing = (async () => {
+    try {
+      const [e, m, h, log] = await Promise.all([
+        ...['easy', 'medium', 'hard'].map(d => sb(`leaderboard?select=name,margin,games,created_at&diff=eq.${d}&order=margin.desc,created_at.asc&limit=10`)),
+        sb('runs?select=name,created_at,diff,mode,arrive,hits,vs,won&order=created_at.desc&limit=15'),
+      ]);
+      remote.top = {easy:mapTop(e), medium:mapTop(m), hard:mapTop(h)};
+      remote.log = (Array.isArray(log) ? log : [])
+        .map(r => ({key:pid(r.name), name:cleanName(r.name), at:Date.parse(r.created_at), diff:r.diff, mode:r.mode, arrive:num(r.arrive), hits:r.hits, vs:r.vs, won:r.won}))
+        .filter(r => r.name && r.arrive !== null && Number.isFinite(r.at));
+      setBoardNote('Общая таблица: её видят все, кто играет в эту игру.');
+      renderBoard(); loadBest(); refreshMine();
+    } catch(err){
+      setBoardNote('Общая таблица сейчас недоступна. Проверь интернет и обнови страницу.');
+    } finally { refreshing = null; }
+  })();
+  return refreshing;
+}
+// the player's own best, even when it is outside the top 10
+function refreshMine(){
+  clearTimeout(mineTimer);
+  mineTimer = setTimeout(async () => {
+    const name = cleanName(n1.value); if (name.length < 2) return;
+    try {
+      const rows = await sb(`leaderboard?select=diff,margin&name=ilike.${encodeURIComponent(name)}`);
+      for (const d of Object.keys(DIFF)) delete remote.mine[d + '|' + pid(name)];
+      for (const r of Array.isArray(rows) ? rows : []) if (DIFF[r.diff] && num(r.margin) !== null){
+        const k = r.diff + '|' + pid(name); if (!(k in remote.mine) || r.margin > remote.mine[k]) remote.mine[k] = r.margin;
+      }
+      loadBest();
+    } catch(e){}
+  }, 400);
+}
+function recordRemote(entries){
+  const now = Date.now(), rows = entries.map(e => {
+    const arrive = Math.floor(e.arrive);
+    return {name:e.name, diff, mode, arrive, margin:DEADLINE - arrive, hits:e.hits, kills:e.kills, vs:e.vs || null, won:e.won ?? null};
+  });
+  // show the result at once; the server copy replaces it after the save
+  for (const r of rows){
+    const key = pid(r.name), top = remote.top[diff].filter(x => x.key !== key), old = remote.top[diff].find(x => x.key === key);
+    const games = (old ? old.games : 0) + 1, margin = old && old.margin > r.margin ? old.margin : r.margin;
+    remote.top[diff] = [...top, {key, name:r.name, margin, games}].sort((a, b) => b.margin - a.margin).slice(0, 10);
+    const mk = diff + '|' + key; if (!(mk in remote.mine) || r.margin > remote.mine[mk]) remote.mine[mk] = r.margin;
+    remote.log = [{key, name:r.name, at:now, diff:r.diff, mode:r.mode, arrive:r.arrive, hits:r.hits, vs:r.vs, won:r.won}, ...remote.log].slice(0, 15);
+  }
+  renderBoard(); loadBest();
+  sb('runs', {method:'POST', headers:{Prefer:'return=minimal'}, body:JSON.stringify(rows)})
+    .then(() => refreshRemote())
+    .catch(() => setBoardNote('Не удалось сохранить результат в общую таблицу. Проверь интернет.'));
+}
 document.querySelectorAll('[data-board]').forEach(b => b.addEventListener('click', () => { boardDiff = b.dataset.board; renderBoard(); }));
-[n1, n2].forEach(inp => inp.addEventListener('input', () => { inp.removeAttribute('aria-invalid'); nameErr.hidden = true; loadBest(); renderBoard(); }));
+[n1, n2].forEach(inp => inp.addEventListener('input', () => { inp.removeAttribute('aria-invalid'); nameErr.hidden = true; loadBest(); renderBoard(); if (useSupabase && inp === n1) refreshMine(); }));
 function checkNames(){
   const a = cleanName(n1.value), b = cleanName(n2.value);
   let bad = null, msg = '';
@@ -337,9 +423,16 @@ function checkNames(){
   return true;
 }
 
-loadLocal(); renderBoard(); loadBest();
-setBoardNote('Результаты сохраняются на этом устройстве.');
-(async () => {
+if (useSupabase){
+  setBoardNote('Загружаю общую таблицу…');
+  renderBoard(); loadBest(); refreshRemote();
+  setInterval(() => { if (!document.hidden && state !== 'run') refreshRemote(); }, 30000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshRemote(); });
+} else {
+  loadLocal(); renderBoard(); loadBest();
+  setBoardNote('Результаты сохраняются на этом устройстве.');
+}
+if (!useSupabase) (async () => {
   let db = null;
   try { db = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch(e){ db = null; }
   if (!db) return;
