@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Дунайский дракон</title>
+<title>Danube Dragon</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Caveat:wght@600;700&family=Nunito:wght@600;800&display=swap">
@@ -110,66 +110,66 @@ button.ghost{font-family:var(--body); font-weight:800; font-size:15px; backgroun
 
 <div class="wrap" id="wrap">
   <div class="hud">
-    <h1>Дунайский дракон</h1>
+    <h1>Danube Dragon</h1>
     <div class="scores" id="hudSingle">
-      <span><small>Игрок</small><b class="who" id="who">—</b></span>
-      <span><small>Звонок</small><b>8:25</b></span>
-      <span><small>Лучший приход</small><b id="best">—</b></span>
+      <span><small>Player</small><b class="who" id="who">—</b></span>
+      <span><small>Bell</small><b>8:25</b></span>
+      <span><small>Best arrival</small><b id="best">—</b></span>
     </div>
     <div class="scores" id="hudDual" hidden>
-      <span class="p1"><small id="h1">Игрок 1 · WASD</small><b id="w1">0</b></span>
+      <span class="p1"><small id="h1">Player 1 · WASD</small><b id="w1">0</b></span>
       <span class="vs">:</span>
-      <span class="p2"><small id="h2">Игрок 2 · стрелки</small><b id="w2">0</b></span>
+      <span class="p2"><small id="h2">Player 2 · arrows</small><b id="w2">0</b></span>
     </div>
   </div>
   <div class="stage" id="stage">
     <canvas id="cv"></canvas>
-    <button class="fire" id="fire" type="button" aria-label="Выстрел">Огонь</button>
+    <button class="fire" id="fire" type="button" aria-label="Shoot">Fire</button>
     <div class="overlay" id="ov">
       <div class="setup" id="setup">
-        <div class="modes" role="group" aria-label="Режим игры">
-          <button type="button" id="m1" aria-pressed="true">1 игрок</button>
-          <button type="button" id="m2" aria-pressed="false">2 игрока: дуэль</button>
+        <div class="modes" role="group" aria-label="Game mode">
+          <button type="button" id="m1" aria-pressed="true">1 player</button>
+          <button type="button" id="m2" aria-pressed="false">2 players: duel</button>
         </div>
-        <div class="modes" role="group" aria-label="Сложность">
-          <button type="button" id="d-easy" data-diff="easy" aria-pressed="false">Лёгкая · 30 с</button>
-          <button type="button" id="d-medium" data-diff="medium" aria-pressed="true">Средняя · 1 мин</button>
-          <button type="button" id="d-hard" data-diff="hard" aria-pressed="false">Сложная · 2 мин</button>
+        <div class="modes" role="group" aria-label="Difficulty">
+          <button type="button" id="d-easy" data-diff="easy" aria-pressed="false">Easy · 30 s</button>
+          <button type="button" id="d-medium" data-diff="medium" aria-pressed="true">Medium · 1 min</button>
+          <button type="button" id="d-hard" data-diff="hard" aria-pressed="false">Hard · 2 min</button>
         </div>
         <div class="names">
-          <label class="field" for="n1"><span id="n1Label">Твоё имя</span><input id="n1" type="text" maxlength="20" autocomplete="nickname" placeholder="Например, Миша"></label>
-          <label class="field" for="n2" id="n2Wrap" hidden><span>Игрок 2 · стрелки</span><input id="n2" type="text" maxlength="20" autocomplete="off" placeholder="Имя второго игрока"></label>
+          <label class="field" for="n1"><span id="n1Label">Your name</span><input id="n1" type="text" maxlength="20" autocomplete="nickname" placeholder="For example, Alex"></label>
+          <label class="field" for="n2" id="n2Wrap" hidden><span>Player 2 · arrows</span><input id="n2" type="text" maxlength="20" autocomplete="off" placeholder="Second player's name"></label>
         </div>
       </div>
       <h2 id="ovTitle"></h2>
       <p id="ovText"></p>
       <div class="note" id="note" hidden>
-        <div class="note-head">Записка родителям</div>
+        <div class="note-head">Note to parents</div>
         <p id="noteBody"></p>
-        <div class="note-sign">Классный руководитель, DISV</div>
+        <div class="note-sign">Class teacher, DISV</div>
       </div>
       <p class="err" id="nameErr" role="alert" hidden></p>
       <div class="actions">
-        <button id="go" type="button">Бежать</button>
-        <button id="menu" class="ghost" type="button" hidden>Меню</button>
+        <button id="go" type="button">Run</button>
+        <button id="menu" class="ghost" type="button" hidden>Menu</button>
       </div>
     </div>
   </div>
   <p class="hint" id="hint"></p>
-  <section class="board" aria-label="Результаты">
+  <section class="board" aria-label="Results">
     <div class="panel">
       <div class="panel-head">
-        <h2>Топ-10</h2>
-        <div class="tabs" role="tablist" aria-label="Сложность таблицы">
-          <button type="button" role="tab" data-board="easy" aria-selected="false">Лёгкая</button>
-          <button type="button" role="tab" data-board="medium" aria-selected="true">Средняя</button>
-          <button type="button" role="tab" data-board="hard" aria-selected="false">Сложная</button>
+        <h2>Top 10</h2>
+        <div class="tabs" role="tablist" aria-label="Leaderboard difficulty">
+          <button type="button" role="tab" data-board="easy" aria-selected="false">Easy</button>
+          <button type="button" role="tab" data-board="medium" aria-selected="true">Medium</button>
+          <button type="button" role="tab" data-board="hard" aria-selected="false">Hard</button>
         </div>
       </div>
       <ol class="rows" id="top"></ol>
     </div>
     <div class="panel">
-      <div class="panel-head"><h2>Журнал игр</h2></div>
+      <div class="panel-head"><h2>Game log</h2></div>
       <ul class="rows log" id="log"></ul>
       <p class="board-note" id="boardNote"></p>
     </div>
@@ -189,9 +189,9 @@ const MAX_AMMO = 4, RELOAD = 1.0, COOLDOWN = 0.24, WIN_ROUNDS = 2;
 // Speed is 360 + 4t px/s, so the course length for a run of T seconds is 360T + 2T².
 const DEADLINE = 8*3600 + 25*60, SLACK = 30;
 const DIFF = {
-  easy:   {run:30,  name:'лёгкая',  len:'30 секунд'},
-  medium: {run:60,  name:'средняя', len:'одну минуту'},
-  hard:   {run:120, name:'сложная', len:'две минуты'},
+  easy:   {run:30,  name:'easy',  len:'30 seconds'},
+  medium: {run:60,  name:'medium', len:'one minute'},
+  hard:   {run:120, name:'hard', len:'two minutes'},
 };
 let diff = 'medium', START, COURSE;
 function applyDiff(){
@@ -209,22 +209,22 @@ const BIRD = {
   diver:{hp:2, col:'#ff7a6b', wing:'#c9483c'},
 };
 const PAL = [
-  {name:'Игрок 1', body:'#4fae5a', dark:'#2f7a3c', belly:'#f3d98a'},
-  {name:'Игрок 2', body:'#4a8fd6', dark:'#2b5f9c', belly:'#ffd9a8'},
+  {name:'Player 1', body:'#4fae5a', dark:'#2f7a3c', belly:'#f3d98a'},
+  {name:'Player 2', body:'#4a8fd6', dark:'#2b5f9c', belly:'#ffd9a8'},
 ];
-const REMARKS = ['Звонок был в 8:25!', 'Опять опаздываешь?', 'Так не пойдёт!', 'Завтра с родителями!', 'Где твой дневник?'];
-const OBS_NAME = {rock:'рюкзак', log:'карандаш', stack:'книги', stump:'глобус'};
+const REMARKS = ['The bell rang at 8:25!', 'Late again?', 'This won\'t do!', 'Bring your parents tomorrow!', 'Where is your planner?'];
+const OBS_NAME = {rock:'backpack', log:'pencil', stack:'books', stump:'globe'};
 
 const TEXT = {
   single: {
-    title:'Успей в DISV к 8:25',
-    text:'Сейчас {start}, до школы {len} бега. Каждое столкновение задерживает: рюкзак, книги, карандаш или глобус стоят 10 секунд, бумажный самолётик 6 секунд. Опоздаешь, и учитель выдаст записку для родителей.',
-    hint:'Прыжок: <kbd>Пробел</kbd> <kbd>↑</kbd> или тап · Огонь: <kbd>X</kbd> <kbd>F</kbd> <kbd>Enter</kbd> или кнопка «Огонь»',
+    title:'Get to DISV by 8:25',
+    text:'It is {start} and school is {len} away. Every crash slows you down: a backpack, books, a pencil or a globe costs 10 seconds, a paper plane 6 seconds. Arrive late and the teacher hands you a note for your parents.',
+    hint:'Jump: <kbd>Space</kbd> <kbd>↑</kbd> or tap · Fire: <kbd>X</kbd> <kbd>F</kbd> <kbd>Enter</kbd> or the Fire button',
   },
   dual: {
-    title:'Кто первым в DISV?',
-    text:'Оба выбегают в {start}, до школы {len} бега. Столкновения задерживают, а каждый сожжённый самолётик перелетает к сопернику. Раунд выигрывает тот, кто раньше войдёт в школу. Матч до 2 побед.',
-    hint:'<span class="tag1">Игрок 1, верх:</span> <kbd>W</kbd> прыжок, <kbd>D</kbd> или <kbd>S</kbd> огонь &nbsp;·&nbsp; <span class="tag2">Игрок 2, низ:</span> <kbd>↑</kbd> прыжок, <kbd>→</kbd> или <kbd>↓</kbd> огонь',
+    title:'Who reaches DISV first?',
+    text:'You both set off at {start} and school is {len} away. Crashes slow you down, and every paper plane you burn flies over to your rival. Whoever walks into school first wins the round. First to 2 wins takes the match.',
+    hint:'<span class="tag1">Player 1, top:</span> <kbd>W</kbd> jump, <kbd>D</kbd> or <kbd>S</kbd> fire &nbsp;·&nbsp; <span class="tag2">Player 2, bottom:</span> <kbd>↑</kbd> jump, <kbd>→</kbd> or <kbd>↓</kbd> fire',
   },
 };
 
@@ -239,7 +239,7 @@ const fillText = s => s.replace('{start}', fmt(START)).replace('{len}', DIFF[dif
 const n1 = $('n1'), n2 = $('n2'), n2Wrap = $('n2Wrap'), nameErr = $('nameErr'), setup = $('setup'), menuBtn = $('menu');
 const topEl = $('top'), logEl = $('log'), boardNoteEl = $('boardNote');
 const BEST_FIELD = {easy:'bestEasy', medium:'bestMedium', hard:'bestHard'};
-const DIFF_SHORT = {easy:'лёгкая', medium:'средняя', hard:'сложная'};
+const DIFF_SHORT = {easy:'easy', medium:'medium', hard:'hard'};
 const LOG_KEEP = 40, LS_PLAYERS = 'disv-players';
 const cleanName = s => String(s || '').replace(/[^\p{L}\p{N} .'\-]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 20);
 const pid = name => { let h = 2166136261; for (const ch of cleanName(name).toLowerCase()) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); } return 'p' + (h >>> 0).toString(36); };
@@ -262,8 +262,8 @@ function savePlayer(id, body){
   const ref = playersRef;
   writeChain = writeChain.then(() => ref.doc(id).set(body)).catch(err => {
     setBoardNote(err && err.code === 'quota_exceeded'
-      ? 'Общая таблица переполнена, результат не сохранён.'
-      : 'Не удалось сохранить результат в общую таблицу. Проверь, что у тебя есть доступ на изменение игры.');
+      ? 'The shared leaderboard is full, so this result was not saved.'
+      : 'Could not save the result to the shared leaderboard. Check that you have permission to edit this game.');
   });
 }
 function recordGame(entries){
@@ -317,30 +317,30 @@ function loadBest(){
   $('who').textContent = name || '—';
 }
 function el(tag, cls, text){ const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; }
-function marginText(m){ return m >= 0 ? `за ${m} с до звонка` : `опоздал на ${-m} с`; }
+function marginText(m){ return m >= 0 ? `${m} s before the bell` : `${-m} s late`; }
 function renderBoard(){
   const meId = cleanName(n1.value) ? pid(n1.value) : null;
   document.querySelectorAll('[data-board]').forEach(b => b.setAttribute('aria-selected', b.dataset.board === boardDiff));
   topEl.replaceChildren();
   const rows = topRows(boardDiff);
-  if (!rows.length) topEl.append(el('li', 'empty', 'На этой сложности ещё никто не добежал до школы. Будь первым!'));
+  if (!rows.length) topEl.append(el('li', 'empty', 'Nobody has reached school on this difficulty yet. Be the first!'));
   rows.forEach((r, i) => {
     const li = el('li', r.key === meId ? 'me' : ''), m = r.margin;
     li.append(el('span', 'rank', String(i + 1)));
-    const who = el('span', 'who-cell'); who.append(el('b', '', r.name), el('small', '', `игр: ${r.games}`));
+    const who = el('span', 'who-cell'); who.append(el('b', '', r.name), el('small', '', `games: ${r.games}`));
     const res = el('span', 'res ' + (m >= 0 ? 'ok' : 'bad'), fmt(DEADLINE - m)); res.append(el('small', '', marginText(m)));
     li.append(who, res); topEl.append(li);
   });
   logEl.replaceChildren();
   const games = logRows();
-  if (!games.length) logEl.append(el('li', 'empty', 'Здесь появится каждый забег: кто бежал, когда пришёл и сколько раз споткнулся.'));
+  if (!games.length) logEl.append(el('li', 'empty', 'Every run will show up here: who ran, when they arrived and how often they crashed.'));
   for (const g of games){
     const li = el('li', g.key === meId ? 'me' : ''), m = DEADLINE - g.arrive;
-    const when = new Date(g.at).toLocaleString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
-    let what = `${DIFF_SHORT[g.diff] || ''} · столкновений: ${num(g.hits) || 0}`;
-    if (g.mode === 'dual') what = `дуэль с ${cleanName(g.vs) || 'соперником'}${g.won === true ? ', победа' : g.won === false ? ', поражение' : ', ничья'} · ` + what;
+    const when = new Date(g.at).toLocaleString('en-GB', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+    let what = `${DIFF_SHORT[g.diff] || ''} · crashes: ${num(g.hits) || 0}`;
+    if (g.mode === 'dual') what = `duel vs ${cleanName(g.vs) || 'rival'}${g.won === true ? ', won' : g.won === false ? ', lost' : ', draw'} · ` + what;
     const who = el('span', 'who-cell'); who.append(el('b', '', g.name), el('small', '', `${when} · ${what}`));
-    const res = el('span', 'res ' + (m >= 0 ? 'ok' : 'bad'), fmt(g.arrive)); res.append(el('small', '', m >= 0 ? 'вовремя' : 'опоздал'));
+    const res = el('span', 'res ' + (m >= 0 ? 'ok' : 'bad'), fmt(g.arrive)); res.append(el('small', '', m >= 0 ? 'on time' : 'late'));
     li.append(who, res); logEl.append(li);
   }
 }
@@ -368,10 +368,10 @@ function refreshRemote(){
       remote.log = (Array.isArray(log) ? log : [])
         .map(r => ({key:pid(r.name), name:cleanName(r.name), at:Date.parse(r.created_at), diff:r.diff, mode:r.mode, arrive:num(r.arrive), hits:r.hits, vs:r.vs, won:r.won}))
         .filter(r => r.name && r.arrive !== null && Number.isFinite(r.at));
-      setBoardNote('Общая таблица: её видят все, кто играет в эту игру.');
+      setBoardNote('Shared leaderboard: everyone who plays this game sees it.');
       renderBoard(); loadBest(); refreshMine();
     } catch(err){
-      setBoardNote('Общая таблица сейчас недоступна. Проверь интернет и обнови страницу.');
+      setBoardNote('The shared leaderboard is unavailable right now. Check your connection and reload the page.');
     } finally { refreshing = null; }
   })();
   return refreshing;
@@ -407,16 +407,16 @@ function recordRemote(entries){
   renderBoard(); loadBest();
   sb('runs', {method:'POST', headers:{Prefer:'return=minimal'}, body:JSON.stringify(rows)})
     .then(() => refreshRemote())
-    .catch(() => setBoardNote('Не удалось сохранить результат в общую таблицу. Проверь интернет.'));
+    .catch(() => setBoardNote('Could not save the result to the shared leaderboard. Check your connection.'));
 }
 document.querySelectorAll('[data-board]').forEach(b => b.addEventListener('click', () => { boardDiff = b.dataset.board; renderBoard(); }));
 [n1, n2].forEach(inp => inp.addEventListener('input', () => { inp.removeAttribute('aria-invalid'); nameErr.hidden = true; loadBest(); renderBoard(); if (useSupabase && inp === n1) refreshMine(); }));
 function checkNames(){
   const a = cleanName(n1.value), b = cleanName(n2.value);
   let bad = null, msg = '';
-  if (a.length < 2){ bad = n1; msg = 'Напиши своё имя: хотя бы 2 буквы.'; }
-  else if (mode === 'dual' && b.length < 2){ bad = n2; msg = 'Напиши имя второго игрока.'; }
-  else if (mode === 'dual' && pid(a) === pid(b)){ bad = n2; msg = 'У игроков должны быть разные имена.'; }
+  if (a.length < 2){ bad = n1; msg = 'Enter your name: at least 2 letters.'; }
+  else if (mode === 'dual' && b.length < 2){ bad = n2; msg = 'Enter the second player\'s name.'; }
+  else if (mode === 'dual' && pid(a) === pid(b)){ bad = n2; msg = 'The players need different names.'; }
   if (bad){ setup.hidden = false; menuBtn.hidden = true; bad.setAttribute('aria-invalid', 'true'); nameErr.textContent = msg; nameErr.hidden = false; bad.focus(); return false; }
   n1.value = a; if (mode === 'dual') n2.value = b;
   try { localStorage.setItem('disv-name1', a); if (mode === 'dual') localStorage.setItem('disv-name2', b); } catch(e){}
@@ -424,30 +424,30 @@ function checkNames(){
 }
 
 if (useSupabase){
-  setBoardNote('Загружаю общую таблицу…');
+  setBoardNote('Loading the shared leaderboard…');
   renderBoard(); loadBest(); refreshRemote();
   setInterval(() => { if (!document.hidden && state !== 'run') refreshRemote(); }, 30000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshRemote(); });
 } else {
   loadLocal(); renderBoard(); loadBest();
-  setBoardNote('Результаты сохраняются на этом устройстве.');
+  setBoardNote('Results are saved on this device.');
 }
 if (!useSupabase) (async () => {
   let db = null;
   try { db = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch(e){ db = null; }
   if (!db) return;
   playersRef = db.collection('players');
-  setBoardNote('Загружаю общую таблицу…');
-  const timer = setTimeout(() => setBoardNote('Общая таблица пока не отвечает. Результаты могут быть неполными.'), 10000);
+  setBoardNote('Loading the shared leaderboard…');
+  const timer = setTimeout(() => setBoardNote('The shared leaderboard is not responding yet. Results may be incomplete.'), 10000);
   playersRef.onSnapshot(snap => {
     const next = {};
     for (const d of snap.docs){ const v = d.data(); if (v && typeof v === 'object') next[d.id] = v; }
     players = next;
-    if (!snap.metadata.fromCache){ clearTimeout(timer); setBoardNote('Общая таблица: её видят все, кто открывает игру.'); }
+    if (!snap.metadata.fromCache){ clearTimeout(timer); setBoardNote('Shared leaderboard: everyone who opens this game sees it.'); }
     renderBoard(); loadBest();
   }, () => {
     clearTimeout(timer); playersRef = null; loadLocal(); renderBoard(); loadBest();
-    setBoardNote('Общая таблица недоступна, результаты сохраняются на этом устройстве.');
+    setBoardNote('The shared leaderboard is unavailable, so results are saved on this device.');
   });
 })();
 
@@ -529,7 +529,7 @@ function shoot(L){
 }
 function penalize(L, sec, label){
   L.penalty += sec; L.hits++; L.stumble = .6; L.inv = 1.3; L.shake = 8;
-  L.popups.push({x:L.dino.x+30, y:L.dino.y-74, txt:`+${sec} с`, sub:label, life:1.1, bad:true});
+  L.popups.push({x:L.dino.x+30, y:L.dino.y-74, txt:`+${sec} s`, sub:label, life:1.1, bad:true});
 }
 function puff(L,x,y,n){ for(let i=0;i<n;i++) L.dust.push({x, y, vx:-60-Math.random()*80, vy:-30-Math.random()*50, life:.5}); }
 function scraps(L, b, n){
@@ -596,10 +596,10 @@ function setMode(m){
   fireBtn.hidden = m === 'dual';
   setup.hidden = false; menuBtn.hidden = true; nameErr.hidden = true;
   n2Wrap.hidden = m !== 'dual';
-  $('n1Label').textContent = m === 'dual' ? 'Игрок 1 · WASD' : 'Твоё имя';
+  $('n1Label').textContent = m === 'dual' ? 'Player 1 · WASD' : 'Your name';
   ovTitle.textContent = TEXT[m].title; ovText.textContent = fillText(TEXT[m].text); ovText.hidden = false; note.hidden = true;
   hint.innerHTML = TEXT[m].hint;
-  goBtn.textContent = 'Бежать';
+  goBtn.textContent = 'Run';
   updateWins(); setupLanes(); sampleScene(); resize();
 }
 function updateWins(){ $('w1').textContent = wins[0]; $('w2').textContent = wins[1]; }
@@ -609,7 +609,7 @@ menuBtn.addEventListener('click', e => { e.stopPropagation(); menuBtn.blur(); se
 function start(){
   setupLanes();
   $('h1').textContent = `${lanes[0].name} · WASD`;
-  if (lanes[1]) $('h2').textContent = `${lanes[1].name} · стрелки`; state = 'run'; ov.hidden = true; note.hidden = true; fireBtn.hidden = mode === 'dual';
+  if (lanes[1]) $('h2').textContent = `${lanes[1].name} · arrows`; state = 'run'; ov.hidden = true; note.hidden = true; fireBtn.hidden = mode === 'dual';
   const tok = ++loopToken; last = performance.now();
   requestAnimationFrame(t => loop(t, tok));
 }
@@ -627,10 +627,10 @@ function endSingle(L){
   const c = L.arriveClock, late = c > DEADLINE;
   recordGame([{name:L.name, arrive:c, hits:L.hits, kills:L.kills}]);
   const place = placeOf(L.name);
-  const stats = `Столкновений: ${L.hits}, сожжено самолётиков: ${L.kills}.` + (place ? ` Место в топ-10: ${place}.` : '');
-  if (late) showOverlay('Опоздал в школу!', stats, 'Попробовать ещё раз',
-    `Ученик: ${L.name}. Опоздал в школу: пришёл в ${fmt(c)}, а уроки начинаются в 8:25. Завтра прийти в школу с родителями!`);
-  else showOverlay(`${L.name} успел к звонку!`, `Пришёл в ${fmt(c)}, за ${DEADLINE - Math.floor(c)} с до звонка. ${stats}`, 'Ещё раз');
+  const stats = `Crashes: ${L.hits}, paper planes burned: ${L.kills}.` + (place ? ` Top 10 place: ${place}.` : '');
+  if (late) showOverlay('Late for school!', stats, 'Try again',
+    `Student: ${L.name}. Late for school: arrived at ${fmt(c)}, but lessons start at 8:25. Come to school with your parents tomorrow!`);
+  else showOverlay(`${L.name} made it before the bell!`, `Arrived at ${fmt(c)}, ${DEADLINE - Math.floor(c)} s before the bell. ${stats}`, 'Play again');
 }
 function endRound(){
   state = 'end';
@@ -640,18 +640,18 @@ function endRound(){
     {name:a.name, arrive:a.arriveClock, hits:a.hits, kills:a.kills, vs:b.name, won: tie ? null : winner === a},
     {name:b.name, arrive:b.arriveClock, hits:b.hits, kills:b.kills, vs:a.name, won: tie ? null : winner === b},
   ]);
-  const times = `${a.name} пришёл в ${fmt(ca)}, ${b.name} в ${fmt(cb)}.`;
+  const times = `${a.name} arrived at ${fmt(ca)}, ${b.name} at ${fmt(cb)}.`;
   const lateOnes = lanes.filter(L => L.arriveClock > DEADLINE);
   const noteText = lateOnes.length
-    ? `${lateOnes.length > 1 ? 'Ученики' : 'Ученик'}: ${lateOnes.map(L => L.name).join(' и ')}. ${lateOnes.length > 1 ? 'Опоздали' : 'Опоздал'} в школу, а уроки начинаются в 8:25. Завтра прийти в школу с родителями!`
+    ? `${lateOnes.length > 1 ? 'Students' : 'Student'}: ${lateOnes.map(L => L.name).join(' and ')}. Late for school, but lessons start at 8:25. Come to school with your parents tomorrow!`
     : null;
-  if (tie){ showOverlay('Ничья!', `${times} Счёт ${wins[0]} : ${wins[1]}.`, 'Переиграть', noteText); return; }
+  if (tie){ showOverlay('Draw!', `${times} Score ${wins[0]} : ${wins[1]}.`, 'Replay', noteText); return; }
   wins[winner.i]++; updateWins();
   if (wins[winner.i] >= WIN_ROUNDS){
     matchOver = true;
-    showOverlay(`${winner.name} выигрывает матч!`, `${times} Итоговый счёт ${wins[0]} : ${wins[1]}.`, 'Новый матч', noteText);
+    showOverlay(`${winner.name} wins the match!`, `${times} Final score ${wins[0]} : ${wins[1]}.`, 'New match', noteText);
   } else {
-    showOverlay(`${winner.name} первым в школе!`, `${times} Счёт ${wins[0]} : ${wins[1]}.`, 'Следующий раунд', noteText);
+    showOverlay(`${winner.name} is first at school!`, `${times} Score ${wins[0]} : ${wins[1]}.`, 'Next round', noteText);
   }
 }
 
@@ -721,7 +721,7 @@ function updateLane(L, dt){
         s.life = 0; b.hp--; b.hitT = .12; b.x += 10;
         if (b.hp <= 0){
           L.kills++; scraps(L, b, 12);
-          if (mode === 'dual'){ L.popups.push({x:b.x, y:b.y-14, txt:'к сопернику!', life:.8}); sendBird(L, b.type); }
+          if (mode === 'dual'){ L.popups.push({x:b.x, y:b.y-14, txt:'to your rival!', life:.8}); sendBird(L, b.type); }
         } else scraps(L, b, 3);
       }
     }
@@ -744,7 +744,7 @@ function updateLane(L, dt){
       const bx = b.x-16, by = b.y-9;
       if (b.hp > 0 && (hit(dx,dy,dw,dh,bx,by,32,18) || hit(hx,hy,hw,hh,bx,by,32,18))){
         b.hp = 0; scraps(L, b, 8);
-        penalize(L, PEN_PLANE, b.from !== undefined ? 'самолётик соперника' : 'самолётик'); break;
+        penalize(L, PEN_PLANE, b.from !== undefined ? 'rival\'s plane' : 'paper plane'); break;
       }
     }
   }
@@ -935,7 +935,7 @@ function drawHall(L){
   ctx.fillStyle = '#cfe6f7'; ctx.fillRect(676, GROUND-136, 58, 40);
   ctx.fillStyle = '#7f5530'; ctx.fillRect(734, GROUND-80, 8, 4);
   ctx.fillStyle = '#ffffff'; ctx.fillRect(670, GROUND-172, 70, 18);
-  ctx.fillStyle = '#21142f'; ctx.font = '800 12px Nunito, system-ui, sans-serif'; ctx.fillText('Класс 5B', 705, GROUND-159);
+  ctx.fillStyle = '#21142f'; ctx.font = '800 12px Nunito, system-ui, sans-serif'; ctx.fillText('Class 5B', 705, GROUND-159);
   ctx.fillStyle = '#d8ccb6'; ctx.fillRect(0, GROUND, W, LH-GROUND);
   ctx.fillStyle = '#bfb197'; ctx.fillRect(0, GROUND, W, 3);
   ctx.fillStyle = '#c9bca4'; for (let x=0;x<W;x+=60) ctx.fillRect(x, GROUND, 2, LH-GROUND);
@@ -946,7 +946,7 @@ function drawHall(L){
   drawDino(L, wx, GROUND, wx < 330);
 
   if (T > .9){
-    const txt = late ? REMARKS[Math.floor((T-.9)/1.5) % REMARKS.length] : (T < 2.2 ? 'Доброе утро!' : 'Вовремя, молодец!');
+    const txt = late ? REMARKS[Math.floor((T-.9)/1.5) % REMARKS.length] : (T < 2.2 ? 'Good morning!' : 'On time, well done!');
     ctx.font = '800 16px Nunito, system-ui, sans-serif';
     const tw = ctx.measureText(txt).width, bx = 560 - tw/2 - 14, by = 28, bw = tw + 28, bh = 34;
     const fill = late ? '#fff0ee' : '#f0fbe9', line = late ? '#e05a47' : '#4fae5a';
@@ -960,7 +960,7 @@ function drawHall(L){
   if (T > .4){
     ctx.save(); ctx.translate(440, 150); ctx.rotate(-.08);
     ctx.font = '20px Bungee, Impact, sans-serif'; ctx.textAlign = 'center';
-    const v = late ? `Опоздал: ${fmt(L.arriveClock)}` : `Вовремя: ${fmt(L.arriveClock)}`;
+    const v = late ? `Late: ${fmt(L.arriveClock)}` : `On time: ${fmt(L.arriveClock)}`;
     const tw = ctx.measureText(v).width;
     ctx.globalAlpha = Math.min(1, (T-.4)*3);
     const c = late ? '#e05a47' : '#3f8f4a';
@@ -1042,7 +1042,7 @@ function drawLaneHud(L){
   ctx.textAlign = 'right';
   ctx.font = '22px Bungee, Impact, sans-serif'; ctx.fillStyle = col; ctx.fillText(fmt(c), W-28, y0+17);
   ctx.font = '800 11px Nunito, system-ui, sans-serif'; ctx.fillStyle = 'rgba(255,244,226,.85)';
-  ctx.fillText(L.arrived ? 'пришёл в школу' : late ? 'звонок уже был!' : 'звонок в 8:25', W-28, y0+34);
+  ctx.fillText(L.arrived ? 'arrived at school' : late ? 'the bell has rung!' : 'bell at 8:25', W-28, y0+34);
 }
 
 function drawShot(s){
